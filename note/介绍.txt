@@ -1,0 +1,60 @@
+引入js：<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+总结：
+
+--html页面中
+1、 <div id="app">....</div>     定位渲染位置
+2、 {{ message }}
+3、v-bind:xxx
+    <span v-bind:title="message">
+      鼠标悬停几秒钟查看此处动态绑定的提示信息！
+    </span>
+4、v-if  --不渲染dom
+  <p v-if="seen">现在你看到我了</p>
+5、v-for
+<li v-for="todo in todos">
+  {{ todo.text }}
+</li>
+6、 v-on
+ <button v-on:click="reverseMessage">逆转消息</button>
+7、v-model
+<input v-model="message">
+
+
+
+--js标签中
+1、基本应用： 创建一个Vue对象，json参数有:el、data
+var app = new Vue({
+         el: '#app',
+         data: {
+           message: 'Hello Vue!'
+         }
+ })
+2、Vue对象定义方法
+methods: {
+    reverseMessage: function () {
+      this.message = this.message.split('').reverse().join('')
+    }
+  }
+
+3、定义全局组件
+Vue.component('todo-item', {
+  template: '<li>这是个待办项</li>'
+})
+使用方法：
+<ol>
+  <todo-item></todo-item>
+</ol>
+
+4、定义组件，设置组件可以用到的参数
+Vue.component('todo-item', {
+  props: ['todo'],
+  template: '<li>{{ todo.text }}</li>'
+})
+
+ <todo-item
+      v-for="item in groceryList"
+      v-bind:todo="item"
+      v-bind:key="item.id">
+    </todo-item>
+
+
