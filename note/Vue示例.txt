@@ -1,0 +1,45 @@
+目录：
+1、Vue的data
+2、实例化后，新加data属性无响应
+3、关于Object.freeze(obj)
+4、Vue的内置属性与方法($开头)
+5、Vue生命周期
+
+1、Vue的data
+    可以把一个对象赋值给Vue的data，然后有两种方式操作这个数据对象
+     vm.xxx  和  data.xxx
+    var vm = new Vue({
+            data: data
+     })
+2、实例化后，新加data属性无相应
+只有在实例化的时候，才会把Vue对象 和 data中已有的属性绑定起来，后加的属性不会被Vue响应
+
+3、关于Object.freeze(obj)
+Object.freeze(obj) 是js原生方法，会冻结obj的修改，使Vue的响应无效
+
+4、Vue的内置属性与方法($开头)
+$data/$el/$watch
+var data = { a: 1 }
+var vm = new Vue({
+  el: '#example',
+  data: data
+})
+
+vm.$data === data // => true
+vm.$el === document.getElementById('example') // => true
+
+// $watch 是一个实例方法
+vm.$watch('a', function (newValue, oldValue) {})
+  // 这个回调将在 `vm.a` 改变后调用
+
+5、Vue生命周期
+创建后的钩子函数 created        // 此外还有 mounted、updated 和 destroyed
+钩子函数 类似于 回调函数
+new Vue({
+  data: {
+    a: 1
+  },
+  created: function () {
+    console.log('a is: ' + this.a)  // `this` 指向 vm 实例
+  }
+})
