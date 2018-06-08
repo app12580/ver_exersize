@@ -1,0 +1,48 @@
+目录：
+1、v-once
+2、v-html
+3、v-bind
+4、Mustache 语法使用 js 语句
+5、v- 指令
+6、修饰符
+7、缩写
+
+1、v-once
+<span v-once>这个将不会改变: {{ msg }}</span>
+
+2、v-html    //效果不是replace，而是替换html()
+<p>Using mustaches: {{ rawHtml }}</p>
+<p>Using v-html directive: <span v-html="rawHtml"></span></p>
+
+3、v-bind
+<div v-bind:id="dynamicId"></div>
+
+4、Mustache 语法使用 js 语句
+{{ number + 1 }}
+{{ ok ? 'YES' : 'NO' }}
+{{ message.split('').reverse().join('') }}
+<div v-bind:id="'list-' + id"></div>
+
+//Mustache 语法的错误使用
+{{ var a = 1 }} ×
+{{ if (ok) { return message } }} ×
+
+//无法使用用户自定义的全局变量
+模板表达式都被放在沙盒中，
+只能访问全局变量的一个白名单，如 Math 和 Date 。
+你不应该在模板表达式中试图访问用户定义的全局变量。
+
+5、v- 指令
+v-if， v-bind， v-on， v-for， 等等等
+
+6、修饰符
+.prevent    阻止默认的事件，然后执行自定义的方法
+<form v-on:submit.prevent="onSubmit">...</form>
+
+7、缩写    v-bind， v-on
+<a v-bind:href="url">...</a>
+<a :href="url">...</a>
+
+<a v-on:click="doSomething">...</a>
+<a @click="doSomething">...</a>
+
