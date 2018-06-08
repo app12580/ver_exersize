@@ -6,10 +6,26 @@ Vue对此进行了增强，可以使用对象或数组赋值
 
 2、绑定class的几种方式
 一、对象语法
-1) v-bind + <className,flag>的对象
+1) v-bind + <className,flag>的字符串对象
 <div v-bind:class="{ active: isActive }"></div>
 
 注意：还可以与html原生的css配套使用
 <div class="static"
      v-bind:class="{ active: isActive, 'text-danger': hasError }">
 </div>
+
+2)v-bind + <className,flag>的Vue对象
+<div v-bind:class="classObject"></div>
+data: {
+  classObject: {
+    active: true,
+    'text-danger': false
+  }
+}
+
+
+
+
+
+
+
