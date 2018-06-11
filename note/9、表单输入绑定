@@ -1,3 +1,11 @@
+目录：
+1、v-model 的基本使用
+2、值绑定
+3、 .lazy 修饰符
+4、 .number修饰符
+5、 .trim
+6、 v-model 和 组件一起使用
+
 
 1、v-model 的基本使用
 可以对<input>和<textarea>进行双向数据绑定，本质上是个语法糖
@@ -175,6 +183,6 @@ vm.selected.number // => 123
 
 <input v-model.trim="msg">
 
-
+6、 v-model 和 组件一起使用
 
 

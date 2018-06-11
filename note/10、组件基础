@@ -1,0 +1,210 @@
+
+
+
+1、组件的基本用法
+// 定义一个名为 button-counter 的新组件
+Vue.component('button-counter', {
+  data: function () {
+    return {
+      count: 0
+    }
+  },
+  template: '<button v-on:click="count++">You clicked me {{ count }} times.</button>'
+})
+<div id="components-demo">
+  <button-counter></button-counter>
+</div>
+<div id="components-demo">      //三个按钮组件分开计数
+  <button-counter></button-counter>
+  <button-counter></button-counter>
+  <button-counter></button-counter>
+</div>
+
+2、 共用数据与分组数据
+//根据data返回的东西是 对象 还是 方法
+data: {
+  count: 0
+}
+
+data: function () {
+  return {
+    count: 0
+  }
+}
+
+3、向组件中传入数据  //prop
+//通过传入参数， 可以定制不同类型的组件
+Vue.component('blog-post', {
+  props: ['title'],
+  template: '<h3>{{ title }}</h3>'
+})
+
+--通过字符串：显示传入参数
+<blog-post title="My journey with Vue"></blog-post>
+<blog-post title="Blogging with Vue"></blog-post>
+<blog-post title="Why Vue is so fun"></blog-post>
+
+--通过data内的数据：v-bind:绑定参数
+new Vue({
+  el: '#blog-post-demo',
+  data: {
+    posts: [
+      { id: 1, title: 'My journey with Vue' },
+      { id: 2, title: 'Blogging with Vue' },
+      { id: 3, title: 'Why Vue is so fun' },
+    ]
+  }
+})
+<blog-post
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:title="post.title"
+></blog-post>
+
+4、单个根元素
+--模板 只能含有一个根元素
+--通过传入的prop参数
+
+<blog-post                  //v-bind:绑定n个参数
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:title="post.title"
+  v-bind:content="post.content"
+  v-bind:publishedAt="post.publishedAt"
+  v-bind:comments="post.comments"
+></blog-post>
+
+<blog-post                  //v-bind: 把这n个参数封装到一个对象里面
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:post="post"
+></blog-post>
+
+Vue.component('blog-post', {
+  props: ['post'],
+  template: `
+    <div class="blog-post">
+      <h3>{{ post.title }}</h3>
+      <div v-html="post.content"></div>
+    </div>
+  `
+})
+
+
+5、通过事件向父级组件发送消息
+
+new Vue({
+  el: '#blog-posts-events-demo',
+  data: {
+    posts: [/* ... */],
+    postFontSize: 1
+  }
+})
+
+<div id="blog-posts-events-demo">
+  <div :style="{ fontSize: postFontSize + 'em' }">
+    <blog-post
+      v-for="post in posts"
+      v-bind:key="post.id"
+      v-bind:post="post"
+       v-on:enlarge-text="postFontSize += 0.1"   //或者 v-on:enlarge-text="onEnlargeText"
+    ></blog-post>
+  </div>
+</div>
+
+现在我们在每篇博文正文之前添加一个按钮来放大字号：
+
+Vue.component('blog-post', {
+  props: ['post'],
+  template: `
+    <div class="blog-post">
+      <h3>{{ post.title }}</h3>
+      <button v-on:click="$emit('enlarge-text')">       //$emit('enlarge-text') 通过这个方法，使组件能够触发方法
+        Enlarge text
+      </button>
+      <div v-html="post.content"></div>
+    </div>
+  `
+})
+
+---------------------------------------
+或者：
+<blog-post
+  ...
+  v-on:enlarge-text="onEnlargeText"
+></blog-post>
+那么这个值将会作为第一个参数传入这个方法：
+
+methods: {
+  onEnlargeText: function (enlargeAmount) {
+    this.postFontSize += enlargeAmount
+  }
+}
+
+6、在组件上使用 v-model
+1)对于<input> 的v-model的解读
+<input v-model="searchText">
+等价于：
+<input
+  v-bind:value="searchText"                         //单向数据流：从物理层流向视图层
+  v-on:input="searchText = $event.target.value"     //单向数据流：从视图层流向物理层
+>
+
+2)在组件上 模拟 v-model
+当用在组件上时，v-model 则会这样：
+
+<custom-input
+  v-bind:value="searchText"         //把物理层的数据 赋值给 value
+  v-on:input="searchText = $event"  //把 $event 从视图层 流向物理层   //:input 是 视图层的行为
+></custom-input>
+为了让它正常工作，这个组件内的 <input> 必须：
+
+将其 value 特性绑定到一个名叫 value 的 prop 上
+在其 input 事件被触发时，将新的值通过自定义的 input 事件抛出
+
+3)在组件上 使用v-model
+Vue.component('custom-input', {
+    props: ['value'],
+    template: `
+      <input
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      >
+    `
+  })
+  现在 v-model 就应该可以在这个组件上完美地工作起来了：
+
+  <custom-input v-model="searchText"></custom-input>
+
+
+7、插槽 slot
+
+<alert-box>
+  Something bad happened.
+</alert-box>
+Vue.component('alert-box', {
+  template: `
+    <div class="demo-alert-box">
+      <strong>Error!</strong>
+      <slot></slot>
+    </div>
+  `
+})
+
+8 模板 的is属性
+
+--可能失效
+<table>
+  <blog-post-row></blog-post-row>
+</table>
+--使用is 确保正常渲染
+<table>
+  <tr is="blog-post-row"></tr>
+</table>
+
+--不需要is的情况
+字符串 (例如：template: '...')
+单文件组件 (.vue)
+<script type="text/x-template">
+
+
