@@ -1,3 +1,20 @@
+目录：
+1、v-for
+2、v-for 的索引使用
+3、item in items 和 item of items
+4、v-for 遍历对象
+5、v-for 遍历对象 key、 value、 索引
+6、v-for 中的key
+7、数组的变异方法和非变异方法在Vue中的使用
+8、js 中无法被Vue响应的数组方法
+9、Vue 无法检测js对象的改变
+10、显示/过滤， 排序结果
+11、v-for 循环某一些自然数
+12、v-for on a <template>
+13、 v-for with v-if
+14、一个组件的 v-for
+
+
 
 1、v-for
 <ul id="example-1">
@@ -60,14 +77,209 @@ new Vue({
 为了给 Vue 一个提示，以便它能跟踪每个节点的身份，从而重用和重新排序现有元素，你需要为每项提供一个唯一 key 属性。
 
 
+7、数组的变异方法和非变异方法在Vue中的使用
+--补充：变异方法 (mutation method)和非变异 (non-mutating method) 方法
+--猜测：变异方法会改变传入参数的对象，而非变异方法对参数不做修改
+
+变异方法：   --push()、pop()、shift()、unshift()、splice()、sort()、reverse()
+例子：example1.items.push({ message: 'Baz' }) 。
+
+非变异方法：  --filter(), concat() 和 slice()
+例子：
+example1.items = example1.items.filter(function (item) {
+     return item.message.match(/Foo/)
+})
+
+补充说明：Vue中的优化：用一个含有相同元素的数组去替换原来的数组是非常高效的操作。
+
+8、js 中无法被Vue响应的数组方法
+--通过索引操作：vm.items[indexOfItem] = newValue
+--直接改变长度：vm.items.length = newLength
+
+解决方式：
+1) 解决索引操作问题：
+Vue.set(vm.items, indexOfItem, newValue)
+//别名  vm.$set(vm.items, indexOfItem, newValue)
+vm.items.splice(indexOfItem, 1, newValue)
+
+2)解决数组长度问题：
+vm.items.splice(newLength)
+
+9、Vue 无法检测js对象的改变
+var vm = new Vue({
+  data: {
+    a: 1    // `vm.a` 现在是响应式的
+  }
+})
+vm.b = 2    // `vm.b` 不是响应式的
+
+解决方案：Vue.set(object, key, value)    //添加
+var vm = new Vue({
+  data: {
+    userProfile: {
+      name: 'Anika'
+    }
+  }
+})
+Vue.set(vm.userProfile, 'age', 27)
+//别名 vm.$set(vm.userProfile, 'age', 27)
+
+--对于 添加多个属性的使用方式：
+Object.assign() 或 _.extend()。
+
+错误方式：
+Object.assign(vm.userProfile, {
+  age: 27,
+  favoriteColor: 'Vue Green'
+})      --error
+
+正确方式：
+vm.userProfile = Object.assign({}, vm.userProfile, {
+  age: 27,
+  favoriteColor: 'Vue Green'
+})      --right
+
+10、显示/过滤， 排序结果
+
+--使用计算属性：
+<li v-for="n in evenNumbers">{{ n }}</li>
+
+data: {
+  numbers: [ 1, 2, 3, 4, 5 ]
+},
+computed: {
+  evenNumbers: function () {
+    return this.numbers.filter(function (number) {
+      return number % 2 === 0
+    })
+  }
+}
+
+--使用方法：
+<li v-for="n in even(numbers)">{{ n }}</li>
+
+data: {
+  numbers: [ 1, 2, 3, 4, 5 ]
+},
+methods: {
+  even: function (numbers) {
+    return numbers.filter(function (number) {
+      return number % 2 === 0
+    })
+  }
+}
 
 
+11、v-for 循环某一些自然数
+<div>
+  <span v-for="n in 10">{{ n }} </span>
+</div>
 
+12、v-for on a <template>    //v-for可以同时控制多个元素
+<ul>
+  <template v-for="item in items">
+    <li>{{ item.msg }}</li>
+    <li class="divider" role="presentation"></li>
+  </template>
+</ul>
 
+13、 v-for with v-if
+v-for 的优先级要高于 v-if
 
+//下面两者的区别：在于循环的次数
+-- 放在同一个元素  //先循环，后判断
+<li v-for="todo in todos" v-if="!todo.isComplete">
+  {{ todo }}
+</li>
 
+-- 分开
+<ul v-if="todos.length">
+  <li v-for="todo in todos">
+    {{ todo }}
+  </li>
+</ul>
+<p v-else>No todos left!</p>
 
+14、一个组件的 v-for
+注意：1、key的定义
+2.2.0+ 的版本里，当在组件中使用 v-for 时，key 现在是必须的。
+2、在对组件传入数据的时候，需要通过[prop]传入数据，体现在组建的调用上即是：v-bind
 
+--示例1
+    <my-component v-for="item in items" :key="item.id"></my-component>
 
+--示例2
+<my-component
+  v-for="(item, index) in items"
+  v-bind:item="item"
+  v-bind:index="index"
+  v-bind:key="item.id"
+></my-component>
 
+--示例3
+说明：<li is="todo-item"> 中"is"的用法：
+按照前面的习惯来说，应该直接调用<todo-item>，但是这样可能会造成不可预知(我能力所限)的错误，
+所以需要显示的告诉浏览器，这个地方的东西是<li>，然后后续的Vue再对其进行操作
+
+<div id="todo-list-example">
+  <form v-on:submit.prevent="addNewTodo">
+    <label for="new-todo">Add a todo</label>
+    <input
+      v-model="newTodoText"
+      id="new-todo"
+      placeholder="E.g. Feed the cat"
+    >
+    <button>Add</button>
+  </form>
+  <ul>
+    <li
+      is="todo-item"
+      v-for="(todo, index) in todos"
+      v-bind:key="todo.id"
+      v-bind:title="todo.title"
+      v-on:remove="todos.splice(index, 1)"
+    ></li>
+  </ul>
+</div>
+
+Vue.component('todo-item', {
+  template: '\
+    <li>\
+      {{ title }}\
+      <button v-on:click="$emit(\'remove\')">Remove</button>\
+    </li>\
+  ',
+  props: ['title']
+})
+
+new Vue({
+  el: '#todo-list-example',
+  data: {
+    newTodoText: '',
+    todos: [
+      {
+        id: 1,
+        title: 'Do the dishes',
+      },
+      {
+        id: 2,
+        title: 'Take out the trash',
+      },
+      {
+        id: 3,
+        title: 'Mow the lawn'
+      }
+    ],
+    nextTodoId: 4
+  },
+  methods: {
+    addNewTodo: function () {
+      this.todos.push({
+        id: this.nextTodoId++,
+        title: this.newTodoText
+      })
+      this.newTodoText = ''
+    }
+  }
+})
 

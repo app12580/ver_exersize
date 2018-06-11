@@ -1,0 +1,25 @@
+转自：https://www.cnblogs.com/gexinpeng/p/4825664.html
+虽然四个块状子元素排在了一行，但是子元素之间却留有空隙！
+
+空隙产生原因：HTML中的换行符、空格符、制表符等空白符，字体大小不为0的情况下，空白符占据一定宽度，使用inline-block会产生元素间的空隙。
+
+<div class="parent">
+    <div class="child">child</div>
+    <div class="child">child</div>
+    <div class="child">child</div>
+    <div class="child">child</div>
+</div>
+
+解决方法 ：
+1. 父元素的font-size设置为0，子元素的font-size设置为实际大小；
+2. 子元素设置浮动；
+3. 把所有的子元素写在一行；
+4. 有时候子元素内容较长，所有子元素写在一行导致代码的可读性很差，这时候采用下面的写法（用HTML注释符把子元素连接起来）：
+
+<div class="parent">
+　　　 <div class="child"></div><!--
+　　--><div class="child"></div><!--
+　　--><div class="child"></div><!--
+　　--><div class="child"></div>
+</div>
+5. 父元素word-spacing设置负值（具体设为多少，我测试的结果显示：不同浏览器还不完全一致，暂不推荐此种方法）。
