@@ -1,0 +1,107 @@
+目录：
+1、组件名
+2、全局注册与局部注册
+3、模块系统
+
+
+
+1、 组件名
+推荐使用小写字母，"-"连接的形式   my-component-name
+//驼峰命名也可以，但是不推荐
+
+2、全局注册与局部注册
+--全局：
+Vue.component('component-a', { /* ... */ })
+--局部注册：
+var ComponentA = { /* ... */ }
+new Vue({
+  el: '#app'
+  components: {
+    'component-a': ComponentA,
+    'component-b': ComponentB
+  }
+})
+--局部注册：在组件内部中使用
+var ComponentA = { /* ... */ }
+var ComponentB = {
+  components: {
+    'component-a': ComponentA
+  },
+  // ...
+}
+
+或者如果你通过 Babel 和 webpack 使用 ES2015 模块，那么代码看起来更像：
+
+import ComponentA from './ComponentA.vue'
+export default {
+  components: {
+    ComponentA
+  },
+  // ...
+}
+
+3、模块系统
+
+1)在单个文件中注册组件
+在模块系统中局部注册
+--目录结构：创建一个 components 目录
+--文件中使用：ComponentB.js 或 ComponentB.vue 文件
+import ComponentA from './ComponentA'
+import ComponentC from './ComponentC'
+export default {
+  components: {
+    ComponentA,
+    ComponentC
+  },
+  // ...
+}
+现在 ComponentA 和 ComponentC 都可以在 ComponentB 的模板中使用了。
+
+
+2)全局注册组件
+基础组件的自动化全局注册
+通过 webpack 的 require.context
+
+在项目入口文件进行全局的基础组件注册：(比如 src/main.js)
+
+示例代码：
+import Vue from 'vue'
+import upperFirst from 'lodash/upperFirst'
+import camelCase from 'lodash/camelCase'
+
+const requireComponent = require.context(
+  // 其组件目录的相对路径
+  './components',
+  // 是否查询其子目录
+  false,
+  // 匹配基础组件文件名的正则表达式
+  /Base[A-Z]\w+\.(vue|js)$/
+)
+
+requireComponent.keys().forEach(fileName => {
+  // 获取组件配置
+  const componentConfig = requireComponent(fileName)
+
+  // 获取组件的 PascalCase 命名
+  const componentName = upperFirst(
+    camelCase(
+      // 剥去文件名开头的 `'./` 和结尾的扩展名
+      fileName.replace(/^\.\/(.*)\.\w+$/, '$1')
+    )
+  )
+
+  // 全局注册组件
+  Vue.component(
+    componentName,
+    // 如果这个组件选项是通过 `export default` 导出的，
+    // 那么就会优先使用 `.default`，
+    // 否则回退到使用模块的根。
+    componentConfig.default || componentConfig
+  )
+})
+
+记住全局注册的行为必须在根 Vue 实例 (通过 new Vue) 创建之前发生。这里有一个真实项目情景下的示例。
+https://github.com/chrisvfritz/vue-enterprise-boilerplate/blob/master/src/components/_globals.js
+
+
+

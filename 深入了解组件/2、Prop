@@ -1,0 +1,226 @@
+1、Prop的大小写
+2、prop的类型
+3、传递静态或动态 Prop
+4、单向数据流
+5、如果在自组建中修改prop
+6、prop验证
+7、prop验证的type范围 和 自定义type
+8、非Prop的特性
+9、替换/合并已有的特性
+10、禁用特性继承
+
+
+
+1、Prop的大小写
+
+HTML 中的特性名是大小写不敏感的，所以浏览器会把所有大写字符解释为小写字符。这意味着当你使用 DOM 中的模板时，camelCase (驼峰命名法) 的 prop 名需要使用其等价的 kebab-case (短横线分隔命名) 命名：
+
+Vue.component('blog-post', {
+  // 在 JavaScript 中是 camelCase 的
+  props: ['postTitle'],
+  template: '<h3>{{ postTitle }}</h3>'
+})
+<!-- 在 HTML 中是 kebab-case 的 -->
+<blog-post post-title="hello!"></blog-post>
+重申一次，如果你使用字符串模板，那么这个限制就不存在了。
+
+
+2、prop的类型
+
+--一般方式：字符串
+    props: ['title', 'likes', 'isPublished', 'commentIds', 'author']
+
+--指定prop类型
+props: {
+  title: String,
+  likes: Number,
+  isPublished: Boolean,
+  commentIds: Array,
+  author: Object
+}
+
+--好处：可以方便类型检查和其它 prop 验证。
+
+3、传递静态或动态 Prop
+
+--静态传值：
+<blog-post title="My journey with Vue"></blog-post>
+--动态传值：
+<blog-post v-bind:title="post.title"></blog-post>
+<blog-post v-bind:title="post.title + ' by ' + post.author.name"></blog-post>
+
+--传入一个数字
+<blog-post v-bind:likes="42"></blog-post>
+<blog-post v-bind:likes="post.likes"></blog-post>
+
+--传入一个布尔值
+<blog-post is-published></blog-post>    //包含该 prop 没有值的情况在内，都意味着 `true`。
+
+//当v-bind 参与进来后，后面的表达就变成了js表达式
+<blog-post v-bind:is-published="false"></blog-post> //通过v-bind 告诉Vue false这是布尔量而非字符串
+<blog-post v-bind:is-published="post.isPublished"></blog-post>
+
+--传入一个数组
+<blog-post v-bind:comment-ids="[234, 266, 273]"></blog-post>    //v-bind作用同上
+<blog-post v-bind:comment-ids="post.commentIds"></blog-post>
+
+--传入一个对象
+<blog-post v-bind:author="{ name: 'Veronica', company: 'Veridian Dynamics' }"></blog-post>  //v-bind 作用同上
+<blog-post v-bind:author="post.author"></blog-post>
+
+--批量传入多个prop
+post: {
+  id: 1,
+  title: 'My Journey with Vue'
+}
+<blog-post v-bind="post"></blog-post>
+等价于：
+<blog-post
+  v-bind:id="post.id"
+  v-bind:title="post.title"
+></blog-post>
+
+4、单向数据流
+
+单向下行绑定：
+    --父级 prop 的更新会向下流动到子组件中，但是反过来则不行。
+这样会防止从子组件意外改变父级组件的状态，从而导致你的应用的数据流向难以理解。
+
+    --不应该在组建内部修改prop
+额外的，每次父级组件发生更新时，子组件中所有的 prop 都将会刷新为最新的值。
+这意味着你不应该在一个子组件内部改变 prop。如果你这样做了，Vue 会在浏览器的控制台中发出警告。
+
+5、如果在自组建中修改prop
+
+1)这个 prop 用来传递一个初始值；
+这个子组件接下来希望将其作为一个本地的 prop 数据来使用。
+在这种情况下，
+最好定义一个本地的 data 属性并将这个 prop 用作其初始值：
+
+  props: ['initialCounter'],
+  data: function () {
+    return {
+      counter: this.initialCounter
+    }
+  }
+
+2)这个 prop 以一种原始的值传入且需要进行转换。
+在这种情况下，最好使用这个 prop 的值来定义一个计算属性：
+
+  props: ['size'],
+  computed: {
+    normalizedSize: function () {
+      return this.size.trim().toLowerCase()
+    }
+  }
+
+注意：如果传入的参数是数组或者对象，那么因为地址传递，修改会影响到父组件的状态。
+
+6、prop验证
+
+--验证类型，如果不通过，会在控制台发出警告
+Vue.component('my-component', {
+  props: {
+    // 基础的类型检查 (`null` 匹配任何类型)
+    propA: Number,
+    // 多个可能的类型
+    propB: [String, Number],
+    // 必填的字符串
+    propC: {
+      type: String,
+      required: true
+    },
+    // 带有默认值的数字
+    propD: {
+      type: Number,
+      default: 100
+    },
+    // 带有默认值的对象
+    propE: {
+      type: Object,
+      // 对象或数组且一定会从一个工厂函数返回默认值
+      default: function () {
+        return { message: 'hello' }
+      }
+    },
+    // 自定义验证函数
+    propF: {
+      validator: function (value) {
+        // 这个值必须匹配下列字符串中的一个
+        return ['success', 'warning', 'danger'].indexOf(value) !== -1
+      }
+    }
+  }
+})
+
+--注意那些 prop 会在一个组件实例创建之前进行验证，
+所以实例的属性 (如 data、computed 等) 在 default 或 validator 函数中是不可用的。
+翻译人话：只能验证初始传进来的组件，在验证时候，data和computed等没有权力也不应该对它们进行修改，不然出了差错验证的活就要背锅了
+--翻译：只会检查小麦是否新鲜，而不会把小麦拿去烤面包了再去检查面包好坏
+
+7、prop验证的type范围 和 自定义type
+--原生的type
+String  Number  Boolean  Array  Object  Date  Function  Symbol
+
+--自定义type：
+function Person (firstName, lastName) {
+  this.firstName = firstName
+  this.lastName = lastName
+}
+
+Vue.component('blog-post', {
+  props: {
+    author: Person
+  }
+})
+来验证 author prop 的值是否是通过 new Person 创建的。
+
+8、非Prop的特性
+<bootstrap-date-input data-date-picker="activated"></bootstrap-date-input>
+然后这个 data-date-picker="activated" 特性就会自动添加到 <bootstrap-date-input> 的根元素上。
+翻译：意思是说，即使模板里面的prop没有写，开发时候也可以直接把需要的html属性扔进模板里面
+
+9、替换/合并已有的特性
+当使用模板和声明模板的属性发生冲突时候：
+class 和 style 特性 会合并在一起；
+其他的属性，从外部提供给组件的值会替换掉组件内部设置好的值。
+
+10、禁用特性继承
+如果你不希望组件的根元素继承特性，你可以设置在组件的选项中设置 inheritAttrs: false。例如：
+
+Vue.component('my-component', {
+  inheritAttrs: false,
+  // ...
+})
+这尤其适合配合实例的 $attrs 属性使用，该属性包含了传递给一个组件的特性名和特性值，例如：
+
+{
+  class: 'username-input',
+  placeholder: 'Enter your username'
+}
+有了 inheritAttrs: false 和 $attrs，你就可以手动决定这些特性会被赋予哪个元素。在撰写基础组件的时候是常会用到的：
+
+Vue.component('base-input', {
+  inheritAttrs: false,
+  props: ['label', 'value'],
+  template: `
+    <label>
+      {{ label }}
+      <input
+        v-bind="$attrs"
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      >
+    </label>
+  `
+})
+这个模式允许你在使用基础组件的时候更像是使用原始的 HTML 元素，而不会担心哪个元素是真正的根元素：
+
+<base-input
+  v-model="username"
+  class="username-input"
+  placeholder="Enter your username"
+></base-input>
+
+
+

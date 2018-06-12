@@ -2,27 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>vue第一个页面</title>
+    <title>按钮点击事件(理解组件的数据)</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 <body>
 <div id="app">
-    {{msg}} 1<br>
-    <input v-model="msg"></input>
-
-
-
+    <p>
+        几点感想：
+        1、组件的两种设置数据方法：内部的data方法 和 v-bind
+        2、传入参数时候，基础数据类型和对象类型数据有很大区别     //值传递和 引用传递\
+        3、组件域里的数据，无法直接通过Vue对象的数据直接传入
+    </p>
+    <ul>
+        <li v-for="item in items">
+            id:{{item.id}} ---> msg: {{item.msg}}
+        </li>
+    </ul>
+    <my-button v-bind:msg="msg" v-bind:count="count.no"></my-button>
+    <my-button v-bind:msg="msg" v-bind:count="count.no"></my-button>
+    <my-button v-bind:msg="msg" v-bind:count="count.no"></my-button>
+    <br><br>
+    <my-button2 v-bind:count="count"></my-button2>
+    <my-button2 v-bind:count="count"></my-button2>
+    <my-button2 v-bind:count="count"></my-button2>
+    <br><br>
+    <my-button3 ></my-button3>
 
 </div>
 
 <script type="text/javascript">
-    var app = new Vue({
-        el: '#app',
-        data: {
-            seen: true,
-            msg: 'sdfsdf'
+
+    Vue.component('my-button',{
+        props:['msg','count'],
+        template:'<button v-on:click="count++">1 {{msg}} 点击了{{count}} 次</button>'
+    })
+
+    Vue.component('my-button2',{
+        // data:function(){
+        //     return {
+        //         count:0
+        //     }
+        // },
+        props:['count'],
+        template:'<button v-on:click="count.no++">1 点击了{{count.no}} 次</button>'
+    })
+
+    Vue.component('my-button3',{
+        data:function(){
+            return {msg:0};
+        },
+        template:'<button>点击了{{msg}}次</button>'
+    })
+
+    var vm = new Vue({
+        el: "#app",
+        data:{
+            items:[
+                {id:1,msg:"第一条数据"},
+                {id:2,msg:"第二条数据"},
+                {id:3,msg:"第三条数据"},
+            ],
+            msg:'测试组件',
+            count: {
+                no:0
+            }
         }
     })
+
 
 </script>
 </body>

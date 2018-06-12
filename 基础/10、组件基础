@@ -1,4 +1,13 @@
-
+目录：
+1、组件的基本用法
+2、共用数据与分组数据
+3、向组件中传入数据
+4、单个根元素
+5、通过事件向父级组件发送消息
+6、在组件上使用 v-model
+7、插槽 slot
+8、 模板 的is属性
+9、字符串模板 与 html模板
 
 
 1、组件的基本用法
@@ -191,7 +200,7 @@ Vue.component('alert-box', {
   `
 })
 
-8 模板 的is属性
+8、 模板 的is属性
 
 --可能失效
 <table>
@@ -207,4 +216,17 @@ Vue.component('alert-box', {
 单文件组件 (.vue)
 <script type="text/x-template">
 
+9、字符串模板 与 html模板
+前面的示例里面的都是字符串模板
 
+html：模板
+<template id="project-header-template">
+    <a v-link="{ path: '/me' }">我的</a>
+    <a v-link="{ path: '/other' }">更多</a>
+</template>
+
+var Header = Vue.extend({
+    template: '#project-header-template'
+});
+
+//template:"#project-header-template"
