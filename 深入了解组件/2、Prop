@@ -222,5 +222,21 @@ Vue.component('base-input', {
   placeholder="Enter your username"
 ></base-input>
 
+//补充说明
+https://www.jianshu.com/p/ce8ca875c337
+//还有关联的$attr属性
 
+翻译成人话：
+默认情况下，v-bind: 可以对一个html标签进行绑定数据，当这个html为模板，并且模板中的Props有某一个aaa属性，
+那么：
+    页面渲染时：不是<div aaa="xxx"></div> 而是 <div></div>  //aaa这个属性被干掉了，放进模板中渲染了
+
+如果： inheritAttrs: false 的时候，不管模板有没有用到aaa属性，渲染出来的时候都是<div></div>，
+    即：v-bind: 绑定的属性不会渲染到html标签上面
+    但是：可以通过其$attrs可以获取到没有使用的注册属性
+
+
+猜测： 经过inheritAttrs: false，虽然不会显示出来，但是仍然能够一级一级的向子孙传递
+
+使用场景：基本组件
 
