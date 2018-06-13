@@ -1,0 +1,160 @@
+目录：
+1、事件名
+2、自定义组件的v-model
+3、.native修饰符 将原生事件绑定到组件
+4、 $listeners 属性
+5、 .sync 修饰符
+
+1、事件名
+事件名：完全匹配，不存在大小写转换或者驼峰命名，中划线命名的转换
+
+模拟事件方法：
+this.$emit('myEvent')
+<my-component v-on:my-event="doSomething"></my-component>
+
+//html 不区分大小写
+推荐你始终使用 kebab-case 的事件名。
+
+2、自定义组件的v-model
+
+Vue.component('base-checkbox', {
+  model: {
+    prop: 'checked',
+    event: 'change'
+  },
+  props: {
+    checked: Boolean
+  },
+  template: `
+    <input
+      type="checkbox"
+      v-bind:checked="checked"
+      v-on:change="$emit('change', $event.target.checked)"
+    >
+  `
+})
+
+<base-checkbox v-model="lovingVue"></base-checkbox>
+
+-- 组件里面的 event 参数 文档没有说明过
+
+文档里面的鬼话：
+一个组件上的 v-model 默认会利用名为 value 的 prop 和名为 input 的事件，但是像单选框、复选框等类型的输入控件可能会将 value 特性用于不同的目的。model 选项可以用来避免这样的冲突：
+现在在这个组件上使用 v-model 的时候：
+<base-checkbox v-model="lovingVue"></base-checkbox>
+这里的 lovingVue 的值将会传入这个名为 checked 的 prop。同时当 <base-checkbox> 触发一个 change 事件并附带一个新的值的时候，这个 lovingVue 的属性将会被更新。
+注意你仍然需要在组件的 props 选项里声明 checked 这个 prop。
+
+//分析代码：如果不加event的相关代码的话，那么数据流只有单向，无法从组件传向父类的Vue对象
+
+翻译成人话：(猜测)
+参考博客：https://www.jb51.net/article/113112.htm
+1)关于 $emit
+      第一个参数表示调用的方法，第二个参数表示传入方法的参数
+
+2)
+<currency-input v-model="price"></currentcy-input>
+<!--上行代码是下行的语法糖-->
+<currency-input :value="price" @input="price = arguments[0]"></currency-input>
+
+3)v-model 对于CheckBox 的应用
+因为此时传入的prop不是value 而是 checked， 点击多选框 触发的不是input 事件 而是 change，
+此时一般需要v-model 重新定制
+
+
+3、.native修饰符 将原生事件绑定到组件
+
+-- .native 修饰符
+<base-input v-on:focus.native="onFocus"></base-input>   /
+//onFocus 是本地定义的方法？？
+
+-- 对于特殊的组件
+<label>
+  {{ label }}
+  <input
+    v-bind="$attrs"
+    v-bind:value="value"
+    v-on:input="$emit('input', $event.target.value)"
+  >
+</label>
+
+此时 .native 虽然没有报错，但是可能无法达到预期的效果
+//这个地方。。。。？？？？
+
+4、 $listeners 属性  //完善监听事件
+Vue 提供了一个 $listeners 属性，
+它是一个对象，里面包含了作用在这个组件上的所有监听器。
+例如：
+{
+  focus: function (event) { /* ... */ }
+  input: function (value) { /* ... */ },
+}
+
+Vue.component('base-input', {
+  inheritAttrs: false,
+  props: ['label', 'value'],
+  computed: {
+    inputListeners: function () {
+      var vm = this
+      // `Object.assign` 将所有的对象合并为一个新对象
+      return Object.assign({},
+        // 我们从父级添加所有的监听器
+        this.$listeners,
+        // 然后我们添加自定义监听器，
+        // 或覆写一些监听器的行为
+        {
+          // 这里确保组件配合 `v-model` 的工作
+          input: function (event) {
+            vm.$emit('input', event.target.value)
+          }
+        }
+      )
+    }
+  },
+  template: `
+    <label>
+      {{ label }}
+      <input
+        v-bind="$attrs"
+        v-bind:value="value"
+        v-on="inputListeners"
+      >
+    </label>
+  `
+})
+
+现在 <base-input> 组件是一个完全透明的包裹器了，
+也就是说它可以完全像一个普通的 <input> 元素一样使用了：
+所有跟它相同的特性和监听器的都可以工作。
+
+5、 .sync 修饰符
+--双向绑定：
+双向绑定会带来维护上的问题，
+因为子组件可以修改父组件，
+且在父组件和子组件都没有明显的改动来源。
+
+--实例代码：
+this.$emit('update:title', newTitle)
+
+<text-document
+  v-bind:title="doc.title"
+  v-on:update:title="doc.title = $event"
+></text-document>
+//解读：v-bind 和 v-on 分别对应了数据流的两个流向
+
+等价于： 使用 .sync
+<text-document v-bind:title.sync="doc.title"></text-document>
+--同时设置多个 prop
+<text-document v-bind.sync="doc"></text-document>
+
+
+注意：
+将 v-bind.sync 用在一个字面量的对象上，
+例如 v-bind.sync=”{ title: doc.title }”，
+是无法正常工作的，
+因为在解析一个像这样的复杂表达式的时候，
+有很多边缘情况需要考虑。
+
+
+
+
