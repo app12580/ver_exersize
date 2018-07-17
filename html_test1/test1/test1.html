@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+    <p :title="title">{{msg}}</p>
+    <ul>
+        <li v-for="book in books">书名：<<{{book.name}}>>，作者:{{book.author}},页码：{{book.page}}</li>
+    </ul>
+    <input type="button" :value="btn_msg" v-on:click="m1"></input><br>
+    测试v-model：<input v-model="msg">
+</div>
+<script type="text/javascript">
+
+    var app = new Vue({
+        el: "#app",
+        data: {
+            seen: true,
+            msg: "测试数据",
+            btn_msg: "测试点击按钮",
+            title: "测试的title属性",
+            books: [
+                {
+                    name: '百年孤独',
+                    author: 'DC老师',
+                    page: 123
+                }, {
+                    name: '绝活卡尔',
+                    author: 'YYF',
+                    page: 83
+                }, {
+                    name: '光辉岁月',
+                    author: '小腿',
+                    page: 85
+                }
+            ]
+        },
+        methods: {
+            m1: function () {
+                this.btn_msg = this.btn_msg.split("").reverse().join("");
+            }
+        }
+    })
+
+</script>
+</body>
+</html>
