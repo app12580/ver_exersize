@@ -1,0 +1,29 @@
+目录：
+
+
+1、在动态组件上使用 keep-alive
+
+--没使用<keep-alive>
+<component v-bind:is="currentTabComponent"></component>
+
+--使用<keep-alive>
+<!-- 失活的组件将会被缓存！-->
+<keep-alive>
+  <component v-bind:is="currentTabComponent"></component>
+</keep-alive>
+
+说明：
+keep-alive 可以缓存组件的状态，
+无缓存意思：在不同状态来回切换的时候，A到B， B到A，则曾经在A上的操作会清理掉，重新渲染
+
+注意这个 <keep-alive> 要求被切换到的组件都有自己的名字，不论是通过组件的 name 选项还是局部/全局注册。
+
+--完整代码需要见文档
+
+2、异步组件
+
+
+
+
+
+

@@ -1,0 +1,142 @@
+目录：
+1、插槽的基本使用
+2、具名插槽
+3、默认插槽的内容
+4、编译作用域
+5、作用域插槽
+6、解构 slot-scope
+
+
+1、插槽的基本使用
+
+<navigation-link url="/profile">         <a v-bind:href="url"   class="nav-link">
+  Your Profile                     +        <slot></slot>
+</navigation-link>                        </a>
+
+<slot> 元素将会被替换为“Your Profile”
+插槽内可以包含任何模板代码，包括 HTML：
+如果 <navigation-link> 没有包含一个 <slot> 元素，则任何传入它的内容都会被抛弃。
+
+2、具名插槽
+有些时候我们需要多个插槽。例如，一个假设的 <base-layout> 组件多模板如下：
+<div class="container">                                     <div class="container">
+  <header>                                                    <header>
+    <!-- 我们希望把页头放这里 -->                                         <slot name="header"></slot>
+  </header>                              --->                 </header>
+  <main>                                                      <main>
+    <!-- 我们希望把主要内容放这里 -->                                       <slot></slot>
+  </main>                                                     </main>
+  <footer>                                                    <footer>
+    <!-- 我们希望把页脚放这里 -->                                         <slot name="footer"></slot>
+  </footer>                                                   </footer>
+</div>                                                      </div>
+
+
+--两种使用方法：
+--第一种                                                      --第二种
+<base-layout>                                              <base-layout>
+  <template slot="header">                                   <h1 slot="header">Here might be a page title</h1>
+    <h1>Here might be a page title</h1>
+  </template>                                                <p>A paragraph for the main content.</p>
+                                                             <p>And another one.</p>
+  <p>A paragraph for the main content.</p>
+  <p>And another one.</p>                                    <p slot="footer">Here's some contact info</p>
+                                                           </base-layout>
+  <template slot="footer">
+    <p>Here's some contact info</p>
+  </template>
+</base-layout>
+
+
+我们还是可以保留一个未命名插槽，
+这个插槽是默认插槽，
+也就是说它会作为所有未匹配到插槽的内容的统一出口。
+
+上述两个示例渲染出来的 HTML 都将会是：
+<div class="container">
+  <header>
+    <h1>Here might be a page title</h1>
+  </header>
+  <main>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </main>
+  <footer>
+    <p>Here's some contact info</p>
+  </footer>
+</div>
+
+
+3、默认插槽的内容
+--<slot>标签中还有其他东西的情况
+
+button 默认内容是“Submit”，但是同时允许用户覆写为“Save”、“Upload”或别的内容
+<button type="submit">
+  <slot>Submit</slot>
+</button>
+
+4、编译作用域
+
+当你想在插槽内使用数据时，例如：
+<navigation-link url="/profile">
+  Logged in as {{ user.name }}
+</navigation-link>
+
+该插槽可以访问跟这个模板的其它地方相同的实例属性
+ (也就是说“作用域”是相同的)。                     --翻译： 插槽内 只能访问 定义组件时候，插槽能够访问的东西
+ 但这个插槽不能访问 <navigation-link> 的作用域。
+ 例如尝试访问 url 是不会工作的。牢记一条准则：      --翻译： 插槽内 不能访问 <navigation-link xxx yyy>里面的属性
+
+    --父组件模板的所有东西都会在父级作用域内编译；
+    --子组件模板的所有东西都会在子级作用域内编译。
+
+
+5、作用域插槽
+--TODO  需要代码尝试一下
+
+--v-for 中使用插槽 && 给slot 绑定属性
+组件定义：                                                       组件使用：
+<ul>                                                            <todo-list v-bind:todos="todos">
+  <li                                                             <!-- 将 `slotProps` 定义为插槽作用域的名字，可以任意起名字 -->
+    v-for="todo in todos"                                          <template slot-scope="slotProps">
+    v-bind:key="todo.id"                                                <!-- 为待办项自定义一个模板，-->
+  >                                                                     <!-- 通过 `slotProps` 定制每个待办项。-->
+    <!-- 我们为每个 todo 准备了一个插槽，-->                            <span v-if="slotProps.todo.isComplete">✓</span>
+    <!-- 将 `todo` 对象作为一个插槽的 prop 传入。-->                    {{ slotProps.todo.text }}
+    <slot v-bind:todo="todo">                                       </template>
+      <!-- 回退的内容 -->                                        </todo-list>
+      {{ todo.text }}
+    </slot>
+  </li>
+</ul>
+
+
+在 2.5.0+，slot-scope 不再限制在 <template> 元素上使用，而可以用在插槽内的任何元素或组件上。
+
+6、解构 slot-scope
+
+如果一个 JavaScript 表达式在一个函数定义的参数位置有效，
+那么这个表达式实际上就可以被 slot-scope 接受。   --翻译人话：  slot-scope 可以被赋值成作用域里面的变量
+也就是说你可以在支持的环境下 (单文件组件或现代浏览器)，
+在这些表达式中使用 ES2015 解构语法。例如：       --翻译：。。。  原来是：作用域名.变量名.属性， 现在是 变量名.属性
+                                       --净他妈不说人话
+
+<todo-list v-bind:todos="todos">                                     <todo-list v-bind:todos="todos">
+  <template slot-scope="{ todo }">                 对比：               <template slot-scope="slotProps">
+    <span v-if="todo.isComplete">✓</span>          <-->                <span v-if="slotProps.todo.isComplete">✓</span>
+    {{ todo.text }}                                                      {{ slotProps.todo.text }}
+  </template>                                                          </template>
+</todo-list>                                                         </todo-list>
+
+这会使作用域插槽变得更干净一些。
+
+
+
+
+
+
+
+
+
+
+
